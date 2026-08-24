@@ -1,4 +1,4 @@
-export type ProviderId = "openai" | "anthropic" | "openai-compatible";
+export type ProviderId = "openai" | "opencode-zen" | "nvidia-nim" | "openrouter" | "anthropic" | "openai-compatible";
 
 export interface ModelRequest {
   model: string;
