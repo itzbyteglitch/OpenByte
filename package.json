@@ -1,0 +1,26 @@
+{
+  "name": "openbyte",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An open-source AI coding agent with native multi-provider support and Claude Code-style Skills.",
+  "type": "module",
+  "bin": {
+    "openbyte": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "openai": "latest"
+  },
+  "devDependencies": {
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "@types/node": "latest"
+  }
+}
