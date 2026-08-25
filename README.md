@@ -1,24 +1,29 @@
 # OpenByte
 
-OpenByte is an open-source, Claude Code–inspired AI coding agent with a provider-neutral runtime, native OpenAI support, and a native multi-provider model picker.
+OpenByte is an open-source, Claude Code-inspired AI coding agent with a provider-neutral runtime, native OpenAI support, Claude Code-style Skills, and a native multi-provider model picker.
 
-## Native model providers
+## Installation with uv
 
-OpenByte currently supports:
+OpenByte uses **uv** as its package and installation system.
 
-- **OpenAI** — native OpenAI Responses API
-- **OpenCode Zen** — Zen Responses and OpenAI-compatible Chat Completions models
-- **NVIDIA NIM** — NVIDIA hosted NIM OpenAI-compatible endpoint
-- **OpenRouter** — OpenAI-compatible unified model gateway
+```bash
+uv tool install openbyte
+```
 
-Provider API keys are read from environment variables; keys are never stored in the source code.
+Then run:
 
-| Provider | Environment variable | Endpoint |
-|---|---|---|
-| OpenAI | `OPENAI_API_KEY` | `https://api.openai.com/v1` |
-| OpenCode Zen | `OPENCODE_ZEN_API_KEY` | `https://opencode.ai/zen/v1` |
-| NVIDIA NIM | `NVIDIA_API_KEY` | `https://integrate.api.nvidia.com/v1` |
-| OpenRouter | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` |
+```bash
+openbyte
+```
+
+For development:
+
+```bash
+git clone https://github.com/itzbyteglitch/OpenByte.git
+cd OpenByte
+uv sync
+uv run openbyte
+```
 
 ## CLI
 
@@ -37,60 +42,72 @@ openbyte model --model openai/gpt-5.6-luna
 openbyte doctor
 ```
 
-Running `openbyte model` opens the interactive native model picker. The catalog is intentionally provider-aware so the agent can select the correct protocol and endpoint automatically.
+## Native model providers
+
+- **OpenAI** — native Responses API
+- **OpenCode Zen** — Zen Responses and OpenAI-compatible Chat Completions
+- **NVIDIA NIM** — NVIDIA hosted OpenAI-compatible endpoint
+- **OpenRouter** — OpenAI-compatible unified model gateway
+
+Provider API keys are read from environment variables and are never stored in source code.
+
+| Provider | Environment variable | Endpoint |
+|---|---|---|
+| OpenAI | `OPENAI_API_KEY` | `https://api.openai.com/v1` |
+| OpenCode Zen | `OPENCODE_ZEN_API_KEY` | `https://opencode.ai/zen/v1` |
+| NVIDIA NIM | `NVIDIA_API_KEY` | `https://integrate.api.nvidia.com/v1` |
+| OpenRouter | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` |
 
 ## Architecture
 
 ```text
-CLI
-  ↓
-Application / Commands
-  ↓
+uv
+ ↓
+OpenByte CLI (Python)
+ ↓
 Agent Runtime
-  ├── Context Manager
-  ├── Agent Loop
-  ├── Planner / Task Manager
-  ├── Permission Manager
-  └── Session Store
-       ↓
+ ├── Context Manager
+ ├── Agent Loop
+ ├── Planner / Task Manager
+ ├── Permission Manager
+ └── Session Store
+      ↓
 Model Gateway
-  ├── OpenAI Responses API
-  ├── OpenCode Zen Responses
-  ├── OpenAI-compatible adapter
-  │    ├── OpenCode Zen Chat Completions
-  │    ├── NVIDIA NIM
-  │    └── OpenRouter
-  └── Future providers
-       ↓
+ ├── OpenAI Responses API
+ ├── OpenCode Zen Responses
+ └── OpenAI-compatible adapter
+      ├── OpenCode Zen Chat Completions
+      ├── NVIDIA NIM
+      └── OpenRouter
+      ↓
 Tool Registry
-  ├── filesystem
-  ├── shell
-  ├── git
-  ├── search
-  └── MCP
-       ↓
+ ├── filesystem
+ ├── shell
+ ├── git
+ ├── search
+ └── MCP
+      ↓
 Skills Registry
-  ├── built-in skills
-  ├── project skills
-  └── user skills
+ ├── built-in skills
+ ├── project skills
+ └── user skills
 ```
 
 ## Goals
 
 - Claude Code-style agent workflow
 - Native OpenAI Responses API
-- Provider-neutral model gateway
 - Native OpenCode Zen, NVIDIA NIM, and OpenRouter support
 - Claude Code-style Skills with `SKILL.md`
 - Filesystem, shell, Git, and MCP tools
 - Permission-aware tool execution
 - Sessions, context management, compaction, and streaming
 - Subagents and task delegation
-- Clean interactive CLI
+- Cross-platform installation through uv
 
 ## Status
 
-Early architecture / foundation phase. Provider selection and the first native model catalog are now in place. The repository is being built in layers so the provider interface, agent loop, tool contracts, Skills system, and CLI remain independently testable.
+Early architecture / foundation phase. The Python/uv runtime and native provider picker are now in place. Agent tools, Skills execution, MCP, permissions, sessions, and subagents are being built in layers.
 
 ## License
 
