@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 PACKAGE_ROOT=Path(__file__).resolve().parents[2]
-SKILL_ROOTS=[PACKAGE_ROOT/"skills",Path(".openbyte/skills"),Path(".agent/skills"),Path("skills"),Path.home()/".openbyte"/"skills"]
+BUILTIN_ROOT=Path(__file__).resolve().parent/"builtin_skills"
+SKILL_ROOTS=[BUILTIN_ROOT,PACKAGE_ROOT/"skills",Path(".openbyte/skills"),Path(".agent/skills"),Path("skills"),Path.home()/".openbyte"/"skills"]
 
 def discover()->list[Path]:
     found=[]; seen=set()
@@ -23,5 +24,4 @@ def load_relevant(prompt:str,limit:int=5)->str:
     blocks.sort(reverse=True,key=lambda x:x[0])
     return "\n\n--- SKILL ---\n\n".join(t[:12000] for _,t in blocks[:limit])
 
-def list_skills()->list[str]:
-    return [str(p.relative_to(PACKAGE_ROOT)) if p.is_relative_to(PACKAGE_ROOT) else str(p) for p in discover()]
+def list_skills()->list[str]: return [str(p.parent) for p in discover()]
