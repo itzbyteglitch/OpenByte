@@ -1,11 +1,12 @@
 [project]
 name = "openbyte"
-version = "0.3.0"
-description = "Open-source autonomous AI coding agent with native multi-provider support, Skills, tools, sessions, and MCP configuration."
+version = "0.4.0"
+description = "Open-source autonomous AI coding agent with native multi-provider support, Skills, tools, sessions, MCP, and a full terminal UI."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "openai>=1.100.0",
+  "textual>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -13,6 +14,7 @@ dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [project.scripts]
 openbyte = "openbyte.cli:main"
+openbyte-tui = "openbyte.tui:run_tui"
 
 [build-system]
 requires = ["hatchling"]
@@ -28,6 +30,4 @@ packages = ["src/openbyte"]
 line-length = 120
 
 [tool.ruff.lint]
-# CI uses Ruff as a correctness gate. Formatting/style can be tightened separately
-# without blocking the runtime while the codebase is being migrated to Python.
 select = ["E9", "F"]
