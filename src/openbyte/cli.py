@@ -1,5 +1,5 @@
 import argparse, os, sys
-from .catalog import MODEL_CATALOG, find_model, provider_models
+from .catalog import MODEL_CATALOG, find_model, provider_models, refresh_openrouter_models
 from .agent import Agent
 from . import __version__, session
 from .config import load, save, init_project
@@ -8,15 +8,21 @@ from .mcp import servers
 
 PROVIDERS=("openai","opencode-zen","nvidia-nim","openrouter")
 
-def pick_model():
-    print("\nOpenByte Model Picker\n"); choices=[]; n=1
-    for provider in PROVIDERS:
+def pick_model(provider_filter=None):
+    print("\nOpenByte Model Picker\n")
+    if provider_filter == "openrouter":
+        print("Fetching the live OpenRouter model catalog...\n")
+    choices=[]; n=1
+    for provider in (PROVIDERS if provider_filter is None else (provider_filter,)):
         models=provider_models(provider)
         if not models: continue
-        print(f"  {provider}")
+        print(f"  {provider} ({len(models)} models)")
         for model in models:
             print(f"    {n}. {model.name} ({model.id})"); choices.append(model); n+=1
-    if not choices: raise RuntimeError("No models configured.")
+    if not choices:
+        if provider_filter == "openrouter":
+            raise RuntimeError("No OpenRouter models available. Set OPENROUTER_API_KEY and check your network connection.")
+        raise RuntimeError("No models configured.")
     answer=input("\nSelect a model number: ").strip()
     try: selected=choices[int(answer)-1]
     except (ValueError,IndexError): raise RuntimeError("Invalid model selection.")
@@ -28,7 +34,7 @@ def main():
     parser.add_argument("--version",action="version",version=__version__)
     sub=parser.add_subparsers(dest="command")
     run=sub.add_parser("run",help="run the coding agent"); run.add_argument("prompt",nargs="?",default=""); run.add_argument("-p","--provider"); run.add_argument("-m","--model"); run.add_argument("--auto-approve",action="store_true"); run.add_argument("--session")
-    model=sub.add_parser("model",help="open the native model picker"); model.add_argument("-p","--provider"); model.add_argument("-m","--model")
+    model=sub.add_parser("model",help="open the native model picker"); model.add_argument("-p","--provider"); model.add_argument("-m","--model"); model.add_argument("--refresh",action="store_true",help="refresh the live OpenRouter catalog")
     sub.add_parser("init",help="initialize OpenByte in this project")
     sub.add_parser("skills",help="list discovered Skills")
     sub.add_parser("agents",help="show agent/subagent status")
@@ -40,19 +46,19 @@ def main():
     args=parser.parse_args()
     try:
         if args.command=="tui":
-            from .tui import run_tui
-            run_tui()
+            from .tui import run_tui; run_tui()
         elif args.command=="run":
             cfg=load(); provider=args.provider or cfg["provider"]; model=args.model or cfg["model"]; d=find_model(provider,model)
-            if not d: raise RuntimeError(f"Unknown model: {provider}/{model}. Run 'openbyte model'.")
+            if not d: raise RuntimeError(f"Unknown model: {provider}/{model}. Run 'openbyte model --provider {provider}'.")
             Agent(d,approval_mode="auto" if args.auto_approve else cfg["approval_mode"],session_id=args.session).run(args.prompt or input("OpenByte> "))
         elif args.command=="model":
+            if args.refresh:
+                refreshed=refresh_openrouter_models(); print(f"OpenRouter catalog refreshed: {len(refreshed)} models available.")
             if args.model:
-                d=find_model(args.provider,args.model) if args.provider else next((m for m in MODEL_CATALOG if m.id==args.model),None)
-                if not d: raise RuntimeError("Model not found.")
+                d=find_model(args.provider,args.model) if args.provider else next((m for m in provider_models() if m.id==args.model),None)
+                if not d: raise RuntimeError("Model not found. For OpenRouter, set OPENROUTER_API_KEY first.")
                 print(f"{d.name}\nProvider: {d.provider}\nModel: {d.id}\nProtocol: {d.protocol}\nAPI key: {d.env_key}\nEndpoint: {d.base_url}")
-            elif args.provider:
-                for m in provider_models(args.provider): print(f"{m.id}\t{m.name}")
+            elif args.provider: pick_model(args.provider)
             else: pick_model()
         elif args.command=="init": print(f"Initialized {init_project()}")
         elif args.command=="skills":
