@@ -34,7 +34,7 @@ def main():
     sub.add_parser("mcp",help="show configured MCP servers")
     sub.add_parser("config",help="show or update configuration")
     sub.add_parser("doctor",help="diagnose installation and environment")
-    sessions=sub.add_parser("sessions",help="list resumable sessions")
+    sub.add_parser("sessions",help="list resumable sessions")
     args=parser.parse_args()
     try:
         if args.command=="run":
