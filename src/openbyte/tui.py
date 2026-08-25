@@ -19,35 +19,35 @@ class SideBar(Static):
             yield Button(f"{label}  [{key}]", id=f"nav-{key}", classes="nav")
 
 class BaseScreen(Screen):
-    def title(self): return "OpenByte"
+    def screen_title(self): return "OpenByte"
     def body(self): return []
     def compose(self):
         yield Header(show_clock=True)
         with Horizontal(id="shell"):
             yield SideBar()
             with Vertical(id="content"):
-                yield Label(self.title(), id="screen-title")
+                yield Label(self.screen_title(), id="screen-title")
                 yield VerticalScroll(*self.body(), id="screen-body")
         yield Footer()
 
 class Dashboard(BaseScreen):
-    def title(self): return "Dashboard"
+    def screen_title(self): return "Dashboard"
     def body(self):
         cfg=load(); ss=list_sessions(); ms=MODEL_CATALOG; mc=servers(); sk=list_skills()
         return [Static(f"Welcome to OpenByte v{__version__}\n\nYour autonomous coding workspace.", classes="hero"), Static(f"MODEL\n{cfg['provider']} / {cfg['model']}", classes="card"), Static(f"SESSIONS\n{len(ss)} resumable sessions", classes="card"), Static(f"MODELS\n{len(ms)} models across {len(set(m.provider for m in ms))} providers", classes="card"), Static(f"MCP\n{len(mc)} configured servers", classes="card"), Static(f"SKILLS\n{len(sk)} discovered Skills", classes="card"), Static("SHORTCUTS\n[d] Dashboard   [c] Chat   [m] Models   [s] Sessions   [p] MCP\n[k] Skills   [u] Usage   [t] Stats   [g] Config   [o] Doctor   [h] Help", classes="card")]
 
 class ChatScreen(BaseScreen):
-    def title(self): return "Chat / Agent"
+    def screen_title(self): return "Chat / Agent"
     def body(self): return [Static("Interactive agent workspace", classes="hero"), Markdown("**Ready.** Type a task below.\n\nThe TUI is the control surface; execution remains handled by OpenByte's agent runtime."), Input(placeholder="Ask OpenByte to build, debug, refactor, test...", id="prompt"), Button("Run task", id="run-task")]
 
 class ModelsScreen(BaseScreen):
-    def title(self): return "Models"
+    def screen_title(self): return "Models"
     def body(self):
         rows=[f"{m.provider:<16} {m.id:<34} {m.name}" for m in MODEL_CATALOG]
         return [Static("PROVIDER / MODEL / NAME", classes="section"), Static("\n".join(rows) or "No models configured.", classes="mono"), Static("\nUse `openbyte model` for the interactive picker or `openbyte model --provider NAME` to filter.", classes="muted")]
 
 class SessionsScreen(BaseScreen):
-    def title(self): return "Sessions"
+    def screen_title(self): return "Sessions"
     def body(self):
         ss=list_sessions(); rows=[]
         for sid in ss:
@@ -55,18 +55,18 @@ class SessionsScreen(BaseScreen):
         return [Static("SESSION ID         SIZE       LAST UPDATED", classes="section"), Static("\n".join(rows) or "No resumable sessions yet.", classes="mono")]
 
 class MCPscreen(BaseScreen):
-    def title(self): return "MCP Servers"
+    def screen_title(self): return "MCP Servers"
     def body(self):
         data=servers(); rows=[f"{k}: {v}" for k,v in data.items()]
         return [Static(f"{len(data)} configured MCP servers", classes="hero"), Static("\n".join(rows) or "No MCP servers configured.\n\nConfig locations: .mcp.json, .openbyte/mcp.json, ~/.openbyte/mcp.json", classes="mono")]
 
 class SkillsScreen(BaseScreen):
-    def title(self): return "Skills"
+    def screen_title(self): return "Skills"
     def body(self):
         sk=list_skills(); return [Static(f"{len(sk)} Skills discovered", classes="hero"), Static("\n".join(sk) or "No Skills found. Add .openbyte/skills/<name>/SKILL.md", classes="mono")]
 
 class UsageScreen(BaseScreen):
-    def title(self): return "Usage"
+    def screen_title(self): return "Usage"
     def body(self):
         files=list(SESSION_ROOT.glob("*.jsonl")) if SESSION_ROOT.exists() else []; total=sum(p.stat().st_size for p in files); messages=0
         for p in files:
@@ -75,23 +75,23 @@ class UsageScreen(BaseScreen):
         return [Static("USAGE OVERVIEW", classes="section"), Static(f"Sessions      {len(files)}\nMessages      {messages}\nStored data   {total:,} bytes\n\nToken/cost telemetry will appear here when provider usage metadata is persisted by the runtime.", classes="card")]
 
 class StatsScreen(BaseScreen):
-    def title(self): return "Stats"
+    def screen_title(self): return "Stats"
     def body(self):
         cfg=load(); providers={m.provider for m in MODEL_CATALOG}; return [Static("RUNTIME STATISTICS", classes="section"), Static(f"OpenByte version   {__version__}\nPython             {os.sys.version.split()[0]}\nWorking directory  {Path.cwd()}\nProviders           {len(providers)}\nModels              {len(MODEL_CATALOG)}\nConfigured provider {cfg['provider']}\nConfigured model    {cfg['model']}\nMax iterations     {cfg['max_iterations']}", classes="card")]
 
 class ConfigScreen(BaseScreen):
-    def title(self): return "Configuration"
+    def screen_title(self): return "Configuration"
     def body(self):
         cfg=load(); return [Static("EFFECTIVE CONFIGURATION", classes="section"), Static("\n".join(f"{k}: {v}" for k,v in cfg.items()), classes="mono")]
 
 class DoctorScreen(BaseScreen):
-    def title(self): return "Doctor"
+    def screen_title(self): return "Doctor"
     def body(self):
         cfg=load(); env=next((m.env_key for m in MODEL_CATALOG if m.provider==cfg['provider']),None); auth=bool(os.getenv(env)) if env else False
         return [Static("SYSTEM HEALTH", classes="section"), Static(f"✓ Python {os.sys.version.split()[0]}\n✓ OpenByte {__version__}\n✓ Project directory accessible\n{'✓' if auth else '⚠'} API key for {cfg['provider']}: {'configured' if auth else 'missing'}\n✓ Configuration readable\n✓ Session store: {SESSION_ROOT}", classes="card")]
 
 class HelpScreen(BaseScreen):
-    def title(self): return "Help"
+    def screen_title(self): return "Help"
     def body(self): return [Static("KEYBOARD SHORTCUTS", classes="section"), Static("d Dashboard\nc Chat\nm Models\ns Sessions\np MCP Servers\nk Skills\nu Usage\nt Stats\ng Config\no Doctor\nh Help\nq Quit", classes="mono"), Static("\nCLI remains available for automation: openbyte run, init, model, skills, agents, mcp, config, sessions, doctor.", classes="muted")]
 
 SCREENS={"d":Dashboard,"c":ChatScreen,"m":ModelsScreen,"s":SessionsScreen,"p":MCPscreen,"k":SkillsScreen,"u":UsageScreen,"t":StatsScreen,"g":ConfigScreen,"o":DoctorScreen,"h":HelpScreen}
