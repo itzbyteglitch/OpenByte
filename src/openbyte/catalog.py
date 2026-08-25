@@ -12,11 +12,13 @@ class ModelDefinition:
     env_key: str
     base_url: str
 
+# The runtime uses the OpenAI SDK's tool-capable chat interface for a single,
+# portable tool loop across native and OpenAI-compatible providers.
 MODEL_CATALOG = [
-    ModelDefinition("openai", "gpt-5.6", "OpenAI GPT-5.6", "responses", "OPENAI_API_KEY", "https://api.openai.com/v1"),
-    ModelDefinition("opencode-zen", "gpt-5.6-luna", "OpenCode Zen · GPT-5.6 Luna", "responses", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
-    ModelDefinition("opencode-zen", "gpt-5.6-sol", "OpenCode Zen · GPT-5.6 Sol", "responses", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
-    ModelDefinition("opencode-zen", "gpt-5.6-terra", "OpenCode Zen · GPT-5.6 Terra", "responses", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
+    ModelDefinition("openai", "gpt-5.6", "OpenAI GPT-5.6", "chat-completions", "OPENAI_API_KEY", "https://api.openai.com/v1"),
+    ModelDefinition("opencode-zen", "gpt-5.6-luna", "OpenCode Zen · GPT-5.6 Luna", "chat-completions", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
+    ModelDefinition("opencode-zen", "gpt-5.6-sol", "OpenCode Zen · GPT-5.6 Sol", "chat-completions", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
+    ModelDefinition("opencode-zen", "gpt-5.6-terra", "OpenCode Zen · GPT-5.6 Terra", "chat-completions", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
     ModelDefinition("opencode-zen", "deepseek-v4-pro", "OpenCode Zen · DeepSeek V4 Pro", "chat-completions", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
     ModelDefinition("opencode-zen", "kimi-k2.7-code", "OpenCode Zen · Kimi K2.7 Code", "chat-completions", "OPENCODE_ZEN_API_KEY", "https://opencode.ai/zen/v1"),
     ModelDefinition("nvidia-nim", "nvidia/nemotron-3-nano-30b-a3b", "NVIDIA NIM · Nemotron 3 Nano", "chat-completions", "NVIDIA_API_KEY", "https://integrate.api.nvidia.com/v1"),
@@ -32,4 +34,4 @@ def find_model(provider: str, model: str):
     return next((m for m in MODEL_CATALOG if m.provider == provider and m.id == model), None)
 
 def provider_models(provider: str | None = None):
-    return [m for m in MODEL_CATALOG if provider is None or m.provider == provider]
+    return [m for m in MODEL_CATALOG if m.provider == provider or provider is None]
