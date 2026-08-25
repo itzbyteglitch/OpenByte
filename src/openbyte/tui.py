@@ -1,9 +1,9 @@
 from __future__ import annotations
 import os, time
 from pathlib import Path
-from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical, VerticalScroll
-from textual.widgets import Header, Footer, Static, Button, Label, Input, DataTable, Markdown
+from textual.app import App
+from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.widgets import Header, Footer, Static, Button, Label, Input, Markdown
 from textual.screen import Screen
 from . import __version__
 from .catalog import MODEL_CATALOG
@@ -34,24 +34,16 @@ class Dashboard(BaseScreen):
     def title(self): return "Dashboard"
     def body(self):
         cfg=load(); ss=list_sessions(); ms=MODEL_CATALOG; mc=servers(); sk=list_skills()
-        return [Static(f"Welcome to OpenByte v{__version__}\n\nYour autonomous coding workspace.", classes="hero"),
-                Static(f"MODEL\n{cfg['provider']} / {cfg['model']}", classes="card"),
-                Static(f"SESSIONS\n{len(ss)} resumable sessions", classes="card"),
-                Static(f"MODELS\n{len(ms)} models across {len(set(m.provider for m in ms))} providers", classes="card"),
-                Static(f"MCP\n{len(mc)} configured servers", classes="card"),
-                Static(f"SKILLS\n{len(sk)} discovered Skills", classes="card"),
-                Static("SHORTCUTS\n[d] Dashboard   [c] Chat   [m] Models   [s] Sessions   [p] MCP\n[k] Skills   [u] Usage   [t] Stats   [g] Config   [o] Doctor   [h] Help", classes="card")]
+        return [Static(f"Welcome to OpenByte v{__version__}\n\nYour autonomous coding workspace.", classes="hero"), Static(f"MODEL\n{cfg['provider']} / {cfg['model']}", classes="card"), Static(f"SESSIONS\n{len(ss)} resumable sessions", classes="card"), Static(f"MODELS\n{len(ms)} models across {len(set(m.provider for m in ms))} providers", classes="card"), Static(f"MCP\n{len(mc)} configured servers", classes="card"), Static(f"SKILLS\n{len(sk)} discovered Skills", classes="card"), Static("SHORTCUTS\n[d] Dashboard   [c] Chat   [m] Models   [s] Sessions   [p] MCP\n[k] Skills   [u] Usage   [t] Stats   [g] Config   [o] Doctor   [h] Help", classes="card")]
 
 class ChatScreen(BaseScreen):
     def title(self): return "Chat / Agent"
-    def body(self):
-        return [Static("Interactive agent workspace", classes="hero"), Markdown("**Ready.** Type a task below.\n\nThe TUI is the control surface; execution remains handled by OpenByte's agent runtime."), Input(placeholder="Ask OpenByte to build, debug, refactor, test...", id="prompt"), Button("Run task", id="run-task")]
+    def body(self): return [Static("Interactive agent workspace", classes="hero"), Markdown("**Ready.** Type a task below.\n\nThe TUI is the control surface; execution remains handled by OpenByte's agent runtime."), Input(placeholder="Ask OpenByte to build, debug, refactor, test...", id="prompt"), Button("Run task", id="run-task")]
 
 class ModelsScreen(BaseScreen):
     def title(self): return "Models"
     def body(self):
-        rows=[]
-        for m in MODEL_CATALOG: rows.append(f"{m.provider:<16} {m.id:<34} {m.name}")
+        rows=[f"{m.provider:<16} {m.id:<34} {m.name}" for m in MODEL_CATALOG]
         return [Static("PROVIDER / MODEL / NAME", classes="section"), Static("\n".join(rows) or "No models configured.", classes="mono"), Static("\nUse `openbyte model` for the interactive picker or `openbyte model --provider NAME` to filter.", classes="muted")]
 
 class SessionsScreen(BaseScreen):
@@ -76,8 +68,7 @@ class SkillsScreen(BaseScreen):
 class UsageScreen(BaseScreen):
     def title(self): return "Usage"
     def body(self):
-        files=list(SESSION_ROOT.glob("*.jsonl")) if SESSION_ROOT.exists() else []
-        total=sum(p.stat().st_size for p in files); messages=0
+        files=list(SESSION_ROOT.glob("*.jsonl")) if SESSION_ROOT.exists() else []; total=sum(p.stat().st_size for p in files); messages=0
         for p in files:
             try: messages += sum(1 for line in p.read_text().splitlines() if line.strip())
             except OSError: pass
@@ -127,8 +118,7 @@ class OpenByteTUI(App):
     """
     TITLE="OpenByte"
     BINDINGS=[("q","quit","Quit"),("d","dashboard","Dashboard"),("c","chat","Chat"),("m","models","Models"),("s","sessions","Sessions"),("p","mcp","MCP"),("k","skills","Skills"),("u","usage","Usage"),("t","stats","Stats"),("g","config","Config"),("o","doctor","Doctor"),("h","help","Help")]
-    def on_mount(self): self.show(Dashboard())
-    def show(self, screen): self.push_screen(screen)
+    def on_mount(self): self.push_screen(Dashboard())
     def action_dashboard(self): self.push_screen(Dashboard())
     def action_chat(self): self.push_screen(ChatScreen())
     def action_models(self): self.push_screen(ModelsScreen())
@@ -141,9 +131,7 @@ class OpenByteTUI(App):
     def action_doctor(self): self.push_screen(DoctorScreen())
     def action_help(self): self.push_screen(HelpScreen())
     def on_button_pressed(self,event):
-        bid=event.button.id or ""
-        key=bid.removeprefix("nav-")
+        bid=event.button.id or ""; key=bid.removeprefix("nav-")
         if key in SCREENS: self.push_screen(SCREENS[key]())
-
 
 def run_tui(): OpenByteTUI().run()
