@@ -20,8 +20,14 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/openbyte"]
+
 [tool.hatch.build.targets.wheel.force-include]
 "skills" = "openbyte_builtin_skills"
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+# CI uses Ruff as a correctness gate. Formatting/style can be tightened separately
+# without blocking the runtime while the codebase is being migrated to Python.
+select = ["E9", "F"]
