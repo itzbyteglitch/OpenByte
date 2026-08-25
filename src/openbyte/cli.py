@@ -25,7 +25,8 @@ def pick_model():
 
 def main():
     parser=argparse.ArgumentParser(prog="openbyte",description="Open-source autonomous AI coding agent")
-    parser.add_argument("--version",action="version",version=__version__); sub=parser.add_subparsers(dest="command")
+    parser.add_argument("--version",action="version",version=__version__)
+    sub=parser.add_subparsers(dest="command")
     run=sub.add_parser("run",help="run the coding agent"); run.add_argument("prompt",nargs="?",default=""); run.add_argument("-p","--provider"); run.add_argument("-m","--model"); run.add_argument("--auto-approve",action="store_true"); run.add_argument("--session")
     model=sub.add_parser("model",help="open the native model picker"); model.add_argument("-p","--provider"); model.add_argument("-m","--model")
     sub.add_parser("init",help="initialize OpenByte in this project")
@@ -35,9 +36,13 @@ def main():
     sub.add_parser("config",help="show or update configuration")
     sub.add_parser("doctor",help="diagnose installation and environment")
     sub.add_parser("sessions",help="list resumable sessions")
+    sub.add_parser("tui",help="launch the full terminal UI")
     args=parser.parse_args()
     try:
-        if args.command=="run":
+        if args.command=="tui":
+            from .tui import run_tui
+            run_tui()
+        elif args.command=="run":
             cfg=load(); provider=args.provider or cfg["provider"]; model=args.model or cfg["model"]; d=find_model(provider,model)
             if not d: raise RuntimeError(f"Unknown model: {provider}/{model}. Run 'openbyte model'.")
             Agent(d,approval_mode="auto" if args.auto_approve else cfg["approval_mode"],session_id=args.session).run(args.prompt or input("OpenByte> "))
